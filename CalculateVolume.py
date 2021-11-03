@@ -89,16 +89,16 @@ def CalculateVolume(vintValue, pixPerMMAtZ, imageWidth, imageHeight, sheet, rowC
         X, Y, width, height = GetArea(imgNum, "roi")
         allImage.append((width, imgNum))
         imgNum += 1
-    allImage = sorted(allImage, key=lambda tup: tup[0])
+    newAllImage = sorted(allImage, key=lambda tup: tup[0])
 
-    img_1st_min = allImage[0]
-    img_2nd_min = allImage[1]
-    concaveWidth_1, concaveAngel_1 = findConcave(img_1st_min[1])
-    concaveWidth_2, concaveAngel_2 = findConcave(img_2nd_min[1])
+    img_1st_min = newAllImage[0][1]
+    img_2nd_min = allImage[(img_1st_min - 1 + 18) % 35][1]
+    concaveWidth_1, concaveAngel_1 = findConcave(img_1st_min)
+    concaveWidth_2, concaveAngel_2 = findConcave(img_2nd_min)
     if concaveWidth_1 < concaveWidth_2:
-        targetIndex = img_2nd_min[1]
+        target = img_2nd_min
     else:
-        targetIndex = img_1st_min[1]
+        target = img_1st_min
     concaveWidth, concaveAngel = findConcave(targetIndex)
     print("concaveIndex: " + str(targetIndex))
     print("concaveWidth: " + str(concaveWidth))
@@ -143,27 +143,27 @@ def CalculateVolume(vintValue, pixPerMMAtZ, imageWidth, imageHeight, sheet, rowC
 
     VolumeFormula = math.pi * result_Length * result_Width * result_Height / 6
     volError_1 = (VolumeFormula - volume_in_mm3) / VolumeFormula
-    print('VolumeOfContour = ' + ("%0.2f" % VolumeFormula) + 'mm^3\n')
+    print('VolumeOfContour = ' + ("%0.3f" % VolumeFormula) + 'mm^3\n')
 
     VolumeFormula = VolumeFormula - concaveVol
     volError = (VolumeFormula - volume_in_mm3) / VolumeFormula
     #
 
-    print('length = ' + ("%0.2f" % result_Length) + 'mm\n')
-    print('width = ' + ("%0.2f" % result_Width) + 'mm\n')
-    print('height = ' + ("%0.2f" % result_Height) + 'mm\n')
-    print('Volume3D = ' + ("%0.2f" % volume_in_mm3) + 'mm^3\n')
-    print('VolumeOfConcave = ' + ("%0.2f" % concaveVol) + 'mm^3\n')
-    print('VolumeOfWithoutConcave = ' + ("%0.2f" % VolumeFormula) + 'mm^3\n')
+    print('length = ' + ("%0.3f" % result_Length) + 'mm\n')
+    print('width = ' + ("%0.3f" % result_Width) + 'mm\n')
+    print('height = ' + ("%0.3f" % result_Height) + 'mm\n')
+    print('Volume3D = ' + ("%0.3f" % volume_in_mm3) + 'mm^3\n')
+    print('VolumeOfConcave = ' + ("%0.3f" % concaveVol) + 'mm^3\n')
+    print('VolumeOfWithoutConcave = ' + ("%0.3f" % VolumeFormula) + 'mm^3\n')
     print('Error_1 = ' + ("%0.4f" % volError_1))
     print('Error = ' + ("%0.4f" % volError))
 
     sheet.write(rowCount, 0, rowCount)
-    sheet.write(rowCount, 1, result_Length)
-    sheet.write(rowCount, 2, result_Width)
-    sheet.write(rowCount, 3, result_Height)
-    sheet.write(rowCount, 4, volume_in_mm3)
-    sheet.write(rowCount, 5, concaveVol)
+    sheet.write(rowCount, 1, ("%0.3f" % result_Length))
+    sheet.write(rowCount, 2, ("%0.3f" % result_Width))
+    sheet.write(rowCount, 3, ("%0.3f" % result_Height))
+    sheet.write(rowCount, 4, ("%0.3f" % volume_in_mm3))
+    sheet.write(rowCount, 5, ("%0.3f" % concaveVol))
 
 
     ##################################################################
