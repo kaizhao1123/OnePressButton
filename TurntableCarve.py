@@ -117,28 +117,26 @@ def ReadImage(fn, idx):
 ##########################################################
 # show the reconstructed volume as isosurface
 def showvolume(Vin, currentfigurenum):
-    mlab.figure(currentfigurenum, bgcolor=(1, 1, 1), fgcolor=(1, 1, 1));
-    mlab.clf();
+    mlab.figure(currentfigurenum, bgcolor=(1, 1, 1), fgcolor=(1, 1, 1))
+    mlab.clf()
 
     p = mlab.contour3d(Vin.vol, color=(1, 0, 0));
-    mlab.text(0.05, 0.95, 'Please close the window to continue calculations.', color=(0, 0, 0), width=0.9);
-    mlab.text(0.3, 0.05, 'Rotate using click&drag', color=(0, 0, 0), width=0.4);
+    mlab.text(0.05, 0.95, 'Please close the window to continue calculations.', color=(0, 0, 0), width=0.9)
+    mlab.text(0.3, 0.05, 'Rotate using click&drag', color=(0, 0, 0), width=0.4)
 
-    c_scene = mlab.get_engine().current_scene;
-    # c_scene.scene.light_manager.light_mode = 'vtk';
-    c_scene.scene.camera.position = [0, 0, -128];
-    c_scene.scene.camera.view_up = [-1, 0, 0];
-    c_scene.scene.render();
-    mlab.show();
-    mlab.savefig('3D_Model')
-    mlab.close()
-    return p;
+    c_scene = mlab.get_engine().current_scene
+    # c_scene.scene.light_manager.light_mode = 'vtk'
+    c_scene.scene.camera.position = [0, 0, -128]
+    c_scene.scene.camera.view_up = [-1, 0, 0]
+    c_scene.scene.render()
+   # mlab.show()
+    return p
 
 
 ##########################################################
 # show the reconstructed volume as rotating isosurface
 def rotatevolume(Vin, currentfigurenum):
-    p = showvolume(Vin, currentfigurenum);
+    p = showvolume(Vin, currentfigurenum)
 
     # auto rotation skipped for python version
     # rotate manually if needed
@@ -212,23 +210,23 @@ def projectVolBox(P, mask, V, currentfigurenum):
 # calculate projection matrix P from given camera and image
 # information
 def ProjectionMatrix(cam, i, imageLength, imageWidth):
-    # pricipal point in image
-    p = [imageLength / 2, imageWidth / 2]
+    # principal point in image
+    p = [imageLength / 2, (imageWidth + 0) / 2]    # the width is not 200, so adjust the Y of p.
 
     # Z = f*(M/m), FocalLength is f/m, m in [mm/pix], 1/M is PixPerMMAtZ
-    f = cam.FocalLengthInMM * cam.PixPerMMSensor;
-    Z = f / cam.PixPerMMAtZ;  # distance of rotation axis, i.e. origin of world coords.
+    f = cam.FocalLengthInMM * cam.PixPerMMSensor
+    Z = f / cam.PixPerMMAtZ  # distance of rotation axis, i.e. origin of world coords.
     X = 0
     Y = 0
 
-    K = np.matrix([[f, 0, p[0]], [0, f, p[1]], [0, 0, 1]]);  # calibration matrix
-    c = np.cos(cam.alpha[i] / 180.0 * np.pi);
-    s = np.sin(cam.alpha[i] / 180.0 * np.pi);
-    R = np.matrix([[c, 0, -s], [0, 1, 0], [s, 0, c]]);  # rotation matrix
-    t = [X, Y, -Z];  # translation vector, where camera is in world coords
+    K = np.matrix([[f, 0, p[0]], [0, f, p[1]], [0, 0, 1]])  # calibration matrix
+    c = np.cos(cam.alpha[i] / 180.0 * np.pi)
+    s = np.sin(cam.alpha[i] / 180.0 * np.pi)
+    R = np.matrix([[c, 0, -s], [0, 1, 0], [s, 0, c]])  # rotation matrix
+    t = [X, Y, -Z]  # translation vector, where camera is in world coords
 
-    tT = np.matrix(t).transpose();
-    P = K * np.matrix(np.concatenate((R, -tT), axis=1));
+    tT = np.matrix(t).transpose()
+    P = K * np.matrix(np.concatenate((R, -tT), axis=1))
     return P
 
 

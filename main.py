@@ -1,8 +1,8 @@
 from CalculateVolume import CalculateVolume
 from CapturePictures import CaptureAllImages
 import xlrd
-from xlwt import Workbook
 from xlutils.copy import copy
+
 
 def ReadFromResult(loc):
     result = xlrd.open_workbook(loc)
@@ -13,18 +13,28 @@ def ReadFromResult(loc):
 
 
 if __name__ == '__main__':
-    print("**** capture images start***")
-    CaptureAllImages()
-    print("**** capture images end***")
 
-    print("**** calculating start ***")
-    vintValue = 105
-    pixPerMMAtZ = 94 / 3.94
-    imageLength = 200
+    # set up the parameters
+    vintValue = 70
+    pixPerMMAtZ = 95 / 3.945
     imageWidth = 200
+    imageHeight = 200
 
+    # read an excel file, prepare to store the result into it.
     loc = "./result.xls"
     rowCount, wb = ReadFromResult(loc)
     sheet1 = wb.get_sheet(0)
-    CalculateVolume(vintValue, pixPerMMAtZ, imageLength, imageWidth, sheet1, rowCount)
-    wb.save('result.xls')
+    index = 0
+
+    # repeat the test for 5 times, and store each result into "result" file
+    while index < 20:
+        print("**** capture images start***")
+        locationID = rowCount + index
+        saveLocation = './pictures/pic' + str(locationID)
+        CaptureAllImages(saveLocation)
+        print("**** capture images end***")
+
+        print("**** calculating start ***")
+        CalculateVolume(vintValue, pixPerMMAtZ, imageWidth, imageHeight, sheet1, rowCount + index)
+        wb.save('result.xls')
+        index += 1

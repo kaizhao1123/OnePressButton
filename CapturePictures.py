@@ -3,7 +3,7 @@ import tisgrabber as IC
 import cv2
 import serial
 import time
-
+import pathlib
 
 lWidth = C.c_long()
 lHeight = C.c_long()
@@ -81,7 +81,7 @@ def SetCamera(camera):
         print("No device selected")
 
 
-def CaptureImage(camera, imgNumber):
+def CaptureImage(camera, imgNumber, saveLocation):
     try:
         # Snap an image
         camera.SnapImage()
@@ -89,7 +89,13 @@ def CaptureImage(camera, imgNumber):
         image = camera.GetImage()
         # Apply some OpenCV function on this image
         image = cv2.flip(image, 0)
-        cv2.imwrite("./pic/00{:02d}.bmp".format(imgNumber), image)
+        cropped = image[0:266, 0:720]       # for different experiment, crop different size.
+        cv2.imwrite("./pic/00{:02d}.bmp".format(imgNumber), cropped)  # store into the calculation location
+
+        # store into save locations, used for check in the future
+        pathlib.Path(saveLocation).mkdir(exist_ok = True)
+        cv2.imwrite(saveLocation + "/00{:02d}.bmp".format(imgNumber), cropped)
+
     except KeyboardInterrupt:
         camera.StopLive()
         cv2.destroyWindow('Window')
@@ -100,14 +106,14 @@ def SendGCode(connection, turn):
     grbl_out = connection.readline()
     #print(grbl_out.strip())
 
-def ProcessLineContent(turn, imageCount, camera):
+def ProcessLineContent(turn, imageCount, camera, saveLocation):
     currentCount = 0
     connection = serial.Serial('COM6', 115200)  # 4
     time.sleep(2)  # Wait for grbl to initialize
     connection.flushInput()  # Flush startup text in serial input
 
     while (currentCount < imageCount):
-        CaptureImage(camera, currentCount + 1)
+        CaptureImage(camera, currentCount + 1, saveLocation)
         print(currentCount + 1)
         SendGCode(connection, turn)
         time.sleep(2)
@@ -115,9 +121,10 @@ def ProcessLineContent(turn, imageCount, camera):
 
     connection.close()
     camera.StopLive()
-    cv2.destroyWindow('Window')
+    #cv2.destroyWindow('Window')
+    cv2.destroyAllWindows()
 
-def CaptureAllImages():
+def CaptureAllImages(saveLocation):
 
     imageCount = 36
     turnDegrees = 10
@@ -127,5 +134,5 @@ def CaptureAllImages():
     camera = FindCamera("side")
 
     SetCamera(camera)
-    time.sleep(4)
-    ProcessLineContent(turn, int(imageCount), camera)
+    time.sleep(3)
+    ProcessLineContent(turn, int(imageCount), camera, saveLocation)
