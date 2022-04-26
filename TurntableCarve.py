@@ -211,7 +211,7 @@ def projectVolBox(P, mask, V, currentfigurenum):
 # information
 def ProjectionMatrix(cam, i, imageLength, imageWidth):
     # principal point in image
-    p = [imageLength / 2, (imageWidth + 0) / 2]    # the width is not 200, so adjust the Y of p.
+    p = [imageLength / 2, imageWidth / 2]    # the width is not 200, so adjust the Y of p.
 
     # Z = f*(M/m), FocalLength is f/m, m in [mm/pix], 1/M is PixPerMMAtZ
     f = cam.FocalLengthInMM * cam.PixPerMMSensor

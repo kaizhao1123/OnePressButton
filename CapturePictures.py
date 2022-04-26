@@ -63,7 +63,6 @@ def SetCamera(camera):
         camera.SetPropertySwitch("Gain", "Auto", 0)  # 0
         camera.SetPropertyValue("Gain", "Value", 0)
 
-
         # Same goes with white balance. We make a complete red image:
         WhiteBalanceAuto = [0]
         camera.SetPropertySwitch("WhiteBalance", "Auto", 1)
@@ -89,22 +88,23 @@ def CaptureImage(camera, imgNumber, saveLocation):
         image = camera.GetImage()
         # Apply some OpenCV function on this image
         image = cv2.flip(image, 0)
-        cropped = image[0:266, 0:720]       # for different experiment, crop different size.
+        cropped = image[0:263, 0:720]  # for different experiment, crop different size.
         cv2.imwrite("./pic/00{:02d}.bmp".format(imgNumber), cropped)  # store into the calculation location
 
         # store into save locations, used for check in the future
-        pathlib.Path(saveLocation).mkdir(exist_ok = True)
+        pathlib.Path(saveLocation).mkdir(exist_ok=True)
         cv2.imwrite(saveLocation + "/00{:02d}.bmp".format(imgNumber), cropped)
 
     except KeyboardInterrupt:
         camera.StopLive()
         cv2.destroyWindow('Window')
 
-def SendGCode(connection, turn):
 
+def SendGCode(connection, turn):
     connection.write((turn + '\n').encode('utf-8'))
     grbl_out = connection.readline()
-    #print(grbl_out.strip())
+    # print(grbl_out.strip())
+
 
 def ProcessLineContent(turn, imageCount, camera, saveLocation):
     currentCount = 0
@@ -112,7 +112,7 @@ def ProcessLineContent(turn, imageCount, camera, saveLocation):
     time.sleep(2)  # Wait for grbl to initialize
     connection.flushInput()  # Flush startup text in serial input
 
-    while (currentCount < imageCount):
+    while currentCount < imageCount:
         CaptureImage(camera, currentCount + 1, saveLocation)
         print(currentCount + 1)
         SendGCode(connection, turn)
@@ -121,11 +121,11 @@ def ProcessLineContent(turn, imageCount, camera, saveLocation):
 
     connection.close()
     camera.StopLive()
-    #cv2.destroyWindow('Window')
+    # cv2.destroyWindow('Window')
     cv2.destroyAllWindows()
 
-def CaptureAllImages(saveLocation):
 
+def CaptureAllImages(saveLocation):
     imageCount = 36
     turnDegrees = 10
     turn = 'G21G91G1X{}F51'.format((turnDegrees * 0.176) / 10)
