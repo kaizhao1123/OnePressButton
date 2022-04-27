@@ -1,9 +1,9 @@
-import numpy as np;
-from scipy.misc import imread;
-import mayavi.mlab as mlab;
-import matplotlib.pyplot as plt;
-import subprocess;
-from sys import platform;
+import numpy as np
+from scipy.misc import imread
+import mayavi.mlab as mlab
+import matplotlib.pyplot as plt
+import subprocess
+from sys import platform
 
 
 def CarveIt(V_in, P, mask, VolWidth, VolHeight, VolDepth):

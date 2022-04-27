@@ -102,4 +102,5 @@ def CalculateVolume(name, dic, vintValue, pixPerMMAtZ, imageWidth, imageHeight, 
         sheet.write(rowCount, 5, volume_in_mm3)
         sheet.write(rowCount, 6, datetime.now().date())
 
+    return result_Length, result_Width, result_Height, volume_in_mm3
     ##################################################################
