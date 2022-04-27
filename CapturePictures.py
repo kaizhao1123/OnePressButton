@@ -22,7 +22,8 @@ def FindCamera(location):
 
     # Open a device with hard coded unique name:
     if location == "side":
-        Camera.open('DFK 37BUX287 15910406')  # for side cam
+        # Camera.open('DFK 37BUX287 15910406')  # for side cam
+        Camera.open('DFK 37BUX287 15910398')  # for side cam
     else:
         Camera.open('DFK 37BUX287 15910400')  # for top cam
     return Camera
@@ -80,7 +81,7 @@ def SetCamera(camera):
         print("No device selected")
 
 
-def CaptureImage(camera, imgNumber, saveLocation):
+def CaptureImage(camera, imgNumber, dic_cap):
     try:
         # Snap an image
         camera.SnapImage()
@@ -88,12 +89,8 @@ def CaptureImage(camera, imgNumber, saveLocation):
         image = camera.GetImage()
         # Apply some OpenCV function on this image
         image = cv2.flip(image, 0)
-        cropped = image[0:263, 0:720]  # for different experiment, crop different size.
-        cv2.imwrite("./pic/00{:02d}.bmp".format(imgNumber), cropped)  # store into the calculation location
-
-        # store into save locations, used for check in the future
-        pathlib.Path(saveLocation).mkdir(exist_ok=True)
-        cv2.imwrite(saveLocation + "/00{:02d}.bmp".format(imgNumber), cropped)
+        cropped = image[0:271, 0:720]  # for different experiment, crop different size.
+        cv2.imwrite(dic_cap + "00{:02d}.bmp".format(imgNumber), cropped)  # store into the calculation location
 
     except KeyboardInterrupt:
         camera.StopLive()
@@ -106,14 +103,14 @@ def SendGCode(connection, turn):
     # print(grbl_out.strip())
 
 
-def ProcessLineContent(turn, imageCount, camera, saveLocation):
+def ProcessLineContent(turn, imageCount, camera, dic_cap):
     currentCount = 0
-    connection = serial.Serial('COM6', 115200)  # 4
+    connection = serial.Serial('COM7', 115200)  # 4
     time.sleep(2)  # Wait for grbl to initialize
     connection.flushInput()  # Flush startup text in serial input
 
     while currentCount < imageCount:
-        CaptureImage(camera, currentCount + 1, saveLocation)
+        CaptureImage(camera, currentCount + 1, dic_cap)
         print(currentCount + 1)
         SendGCode(connection, turn)
         time.sleep(2)
@@ -121,18 +118,17 @@ def ProcessLineContent(turn, imageCount, camera, saveLocation):
 
     connection.close()
     camera.StopLive()
-    # cv2.destroyWindow('Window')
     cv2.destroyAllWindows()
 
 
-def CaptureAllImages(saveLocation):
-    imageCount = 36
+def CaptureAllImages(dic_cap):
+    imageCount = 37
     turnDegrees = 10
-    turn = 'G21G91G1X{}F51'.format((turnDegrees * 0.176) / 10)
+    turn = 'G21G91G1X{}F51'.format((turnDegrees * 0.08884) / 10)
     print(type(turn))
     print(turn)
     camera = FindCamera("side")
 
     SetCamera(camera)
     time.sleep(3)
-    ProcessLineContent(turn, int(imageCount), camera, saveLocation)
+    ProcessLineContent(turn, int(imageCount), camera, dic_cap)
