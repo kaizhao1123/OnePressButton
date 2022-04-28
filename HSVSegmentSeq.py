@@ -18,13 +18,14 @@ def HSVSegmentSeq(fnin, fnout, Hint, Sint, Vint):
     ####################################################################
 
     # print info
-    print('Segment images\n');
+    print('** Analyzing images -- Segment images **')
 
     # color segment images
     NumImgs = len(fnin.number)
     for i in range(NumImgs):
         # print a point to show progress
-        print(".")
+        if i % 9 == 0:
+            print(".")
 
         # read image from file
         img = ReadImage(fnin, i)
@@ -34,9 +35,6 @@ def HSVSegmentSeq(fnin, fnout, Hint, Sint, Vint):
 
         # write mask to file
         WriteImage(mask, fnout, i)
-
-    # print end of line
-    print('\n')
 
 
 ##########################################################

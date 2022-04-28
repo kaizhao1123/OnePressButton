@@ -21,8 +21,8 @@ class Object(object):
 
 
 ##################################################################
-def CalculateVolume(name, dic, vintValue, pixPerMMAtZ, imageWidth, imageHeight, sheet, rowCount, stored):
-    print("****** Cropping ******")
+def CalculateVolume(name, dic, vintValue, pixPerMMAtZ, imageWidth, imageHeight, sheet, rowCount, show3D, stored):
+    print("** Process --- Analyze images **")
 
     # ############ new method ##############
     allWidthData, allHeightData = getExpectedValues(dic, vintValue, "original")
@@ -77,7 +77,7 @@ def CalculateVolume(name, dic, vintValue, pixPerMMAtZ, imageWidth, imageHeight, 
     V.sZ = 100  # number of voxels in Z-direction 100
     #
     # perform volume carving on mask images
-    volume_in_mm3 = TurntableCarve(fnmask, cam, V, imageWidth, imageHeight)
+    volume_in_mm3 = TurntableCarve(fnmask, cam, V, imageWidth, imageHeight, show3D)
     ##################################################################
 
     ##################################################################
@@ -87,10 +87,10 @@ def CalculateVolume(name, dic, vintValue, pixPerMMAtZ, imageWidth, imageHeight, 
     result_Width = result_Width / pixPerMMAtZ
     result_Height = result_Height / pixPerMMAtZ
 
-    print('length = ' + ("%0.3f" % result_Length) + 'mm\n')
-    print('width = ' + ("%0.3f" % result_Width) + 'mm\n')
-    print('height = ' + ("%0.3f" % result_Height) + 'mm\n')
-    print('Volume3D = ' + ("%0.3f" % volume_in_mm3) + 'mm^3\n')
+    # print('length = ' + ("%0.3f" % result_Length) + 'mm\n')
+    # print('width = ' + ("%0.3f" % result_Width) + 'mm\n')
+    # print('height = ' + ("%0.3f" % result_Height) + 'mm\n')
+    # print('Volume3D = ' + ("%0.3f" % volume_in_mm3) + 'mm^3\n')
 
     # store the results into excel file
     if stored:

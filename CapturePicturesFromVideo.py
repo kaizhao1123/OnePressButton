@@ -31,9 +31,9 @@ def getImagesFromVideo(dic):
         success, frame = videoCapture.read()
         timeF = 2
         if i > timeF * 9 and i % timeF == 0:
-            cv2.imwrite(dic + "/00{:02d}.bmp".format(j), frame)
+            # cv2.imwrite(dic + "/00{:02d}.bmp".format(j), frame)
             if j < 38:
-                #cv2.imwrite(dic + "/00{:02d}.bmp".format(j), frame)
+                cv2.imwrite(dic + "/00{:02d}.bmp".format(j), frame)
                 image = cv2.imread(dic + "/00{:02d}.bmp".format(j))
                 crop = image[0:243, 0:720]
                 cv2.imwrite(dic + "/00{:02d}.bmp".format(j), crop)

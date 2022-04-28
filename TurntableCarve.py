@@ -8,49 +8,47 @@ from sys import platform
 
 def CarveIt(V_in, P, mask, VolWidth, VolHeight, VolDepth):
     # Write output exchange file
-    out = open('carveInput.dat', 'wb');
+    out = open('carveInput.dat', 'wb')
 
-    sY = V_in.shape[0];
-    sX = V_in.shape[1];
-    sZ = V_in.shape[2];
+    sY = V_in.shape[0]
+    sX = V_in.shape[1]
+    sZ = V_in.shape[2]
 
-    smY = mask.shape[0];
-    smX = mask.shape[1];
+    smY = mask.shape[0]
+    smX = mask.shape[1]
 
-    width = VolWidth;
-    height = VolHeight;
-    depth = VolDepth;
+    width = VolWidth
+    height = VolHeight
+    depth = VolDepth
 
-    data = np.array([sX, sY, sZ], dtype='uint32');
-    out.write(data.tobytes());
+    data = np.array([sX, sY, sZ], dtype='uint32')
+    out.write(data.tobytes())
+    out.write(V_in.tobytes('A'))
+    out.write(P.tobytes('F'))
 
-    out.write(V_in.tobytes('A'));
+    data = np.array([smX, smY], dtype='uint32')
+    out.write(data.tobytes())
+    out.write(mask.tobytes('F'))
 
-    out.write(P.tobytes('F'));
-
-    data = np.array([smX, smY], dtype='uint32');
-    out.write(data.tobytes());
-    out.write(mask.tobytes('F'));
-
-    data = np.array([width, height, depth], dtype='float64');
-    out.write(data.tobytes());
-    out.close();
+    data = np.array([width, height, depth], dtype='float64')
+    out.write(data.tobytes())
+    out.close()
 
     # Execute
     if platform == "win32":
-        execPrefix = "CarveIt.exe";
+        execPrefix = "CarveIt.exe"
     else:
-        execPrefix = "./CarveIt.o";
+        execPrefix = "./CarveIt.o"
 
-    p = subprocess.Popen(execPrefix + " carveInput.dat carveResult.dat", shell=True);
-    p.wait();
+    p = subprocess.Popen(execPrefix + " carveInput.dat carveResult.dat", shell=True)
+    p.wait()
 
     # Read input exchange file
-    V_in = np.fromfile('carveResult.dat', dtype='uint8');
-    return V_in.reshape((sY, sX, sZ), order='F');
+    V_in = np.fromfile('carveResult.dat', dtype='uint8')
+    return V_in.reshape((sY, sX, sZ), order='F')
 
 
-def TurntableCarve(fn, cam, V, imageLength, imageWidth):
+def TurntableCarve(fn, cam, V, imageLength, imageWidth, show3D):
     # Reconstruct volume of an object from its projection masks acquired using
     # a turntable setup
     #
@@ -66,20 +64,21 @@ def TurntableCarve(fn, cam, V, imageLength, imageWidth):
     # volume_in_mm3 = TurntableCarve(fnmask,cam,tool,V);
     ###################################################################
 
-    V.dx = V.VolWidth / V.sX;  # voxelsize in X-direction
-    V.dy = V.VolHeight / V.sY;  # voxelsize in Y-direction
-    V.dz = V.VolDepth / V.sZ;  # voxelsize in Z-direction
-    V.Voxels = [V.sY, V.sX, V.sZ];  # number of voxels in volume
-    V.vol = np.ones(tuple(V.Voxels), np.uint8);  # solid filled volume
+    V.dx = V.VolWidth / V.sX  # voxelsize in X-direction
+    V.dy = V.VolHeight / V.sY  # voxelsize in Y-direction
+    V.dz = V.VolDepth / V.sZ  # voxelsize in Z-direction
+    V.Voxels = [V.sY, V.sX, V.sZ]  # number of voxels in volume
+    V.vol = np.ones(tuple(V.Voxels), np.uint8)  # solid filled volume
 
     # print info
-    print('Volume carving from masks\n')
+    print('** Analyzing images -- Carving  **')
 
     # loop images for carving
-    NumImgs = len(fn.number);  # number of images
+    NumImgs = len(fn.number)  # number of images
     for i in range(NumImgs):
         # print a point to show progress
-        print('.')
+        if i % 9 == 0:
+            print(".")
 
         # read mask image
         mask = ReadImage(fn, i)
@@ -95,11 +94,9 @@ def TurntableCarve(fn, cam, V, imageLength, imageWidth):
         # alternatively do the carving in Python -- very slow!
         # V.vol = Carve(V.vol,P,mask,V.VolWidth,V.VolHeight,V.VolDepth)
 
-    # print end of line
-    print('\n')
-
     # show the reconstructed object
-    rotatevolume(V, 11)
+    if show3D:
+        rotatevolume(V, 11)
 
     # calculate the final volume of the object
     vol_in_mm3 = np.sum(V.vol) * V.dx * V.dy * V.dz
