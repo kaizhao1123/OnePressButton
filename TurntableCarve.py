@@ -1,9 +1,10 @@
 import numpy as np
 from scipy.misc import imread
-import mayavi.mlab as mlab
+# import mayavi.mlab as mlab
 import matplotlib.pyplot as plt
 import subprocess
 from sys import platform
+import plotly.express as px
 
 
 def CarveIt(V_in, P, mask, VolWidth, VolHeight, VolDepth):
@@ -96,7 +97,9 @@ def TurntableCarve(fn, cam, V, imageLength, imageWidth, show3D):
 
     # show the reconstructed object
     if show3D:
-        rotatevolume(V, 11)
+        # rotatevolume(V, 11)
+        # show3dModel(V)
+        print("No 3d model shows in this version!")
 
     # calculate the final volume of the object
     vol_in_mm3 = np.sum(V.vol) * V.dx * V.dy * V.dz
@@ -111,29 +114,35 @@ def ReadImage(fn, idx):
     return img
 
 
+# def show3dModel(vin):
+#     df = px.data.iris()
+#     fig = px.scatter_3d(df, x='sepal_length', y='sepal_width', z='petal_width',
+#                         color='species')
+#     fig.show()
+
 ##########################################################
 # show the reconstructed volume as isosurface
-def showvolume(Vin, currentfigurenum):
-    mlab.figure(currentfigurenum, bgcolor=(1, 1, 1), fgcolor=(1, 1, 1))
-    mlab.clf()
-
-    p = mlab.contour3d(Vin.vol, color=(1, 0, 0));
-    mlab.text(0.05, 0.95, 'Please close the window to continue calculations.', color=(0, 0, 0), width=0.9)
-    mlab.text(0.3, 0.05, 'Rotate using click&drag', color=(0, 0, 0), width=0.4)
-
-    c_scene = mlab.get_engine().current_scene
-    # c_scene.scene.light_manager.light_mode = 'vtk'
-    c_scene.scene.camera.position = [0, 0, -128]
-    c_scene.scene.camera.view_up = [-1, 0, 0]
-    c_scene.scene.render()
-   # mlab.show()
-    return p
+# def showvolume(Vin, currentfigurenum):
+#     mlab.figure(currentfigurenum, bgcolor=(1, 1, 1), fgcolor=(1, 1, 1))
+#     mlab.clf()
+#
+#     p = mlab.contour3d(Vin.vol, color=(1, 0, 0));
+#     mlab.text(0.05, 0.95, 'Please close the window to continue calculations.', color=(0, 0, 0), width=0.9)
+#     mlab.text(0.3, 0.05, 'Rotate using click&drag', color=(0, 0, 0), width=0.4)
+#
+#     c_scene = mlab.get_engine().current_scene
+#     # c_scene.scene.light_manager.light_mode = 'vtk'
+#     c_scene.scene.camera.position = [0, 0, -128]
+#     c_scene.scene.camera.view_up = [-1, 0, 0]
+#     c_scene.scene.render()
+#    # mlab.show()
+#     return p
 
 
 ##########################################################
 # show the reconstructed volume as rotating isosurface
-def rotatevolume(Vin, currentfigurenum):
-    p = showvolume(Vin, currentfigurenum)
+# def rotatevolume(Vin, currentfigurenum):
+#     p = showvolume(Vin, currentfigurenum)
 
     # auto rotation skipped for python version
     # rotate manually if needed

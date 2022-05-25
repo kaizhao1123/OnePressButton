@@ -8,40 +8,41 @@ from xlutils.copy import copy
 from time import time
 import tkinter as tk
 from tkinter import END
+from tkinter import messagebox
 import sys
 
 
 # open the excel file.
-def ReadFromResult(loc):
-    result = xlrd.open_workbook(loc)
-    sheet1 = result.sheet_by_index(0)
-    rowCount = sheet1.nrows
-    wb = copy(result)
-    return rowCount, wb
+def ReadFromResult(file):
+    try:
+        result = xlrd.open_workbook(file)
+        sheet1 = result.sheet_by_index(0)
+        rowCount = sheet1.nrows
+        wb = copy(result)
+        return rowCount, wb
+    except Exception as e:
+        messagebox.showerror("Read Error", "Please close the result file!")
 
 
 # setup the some default parameters
-path_Capture = './pic_Captured/'
-path_Process = './pic_processing/'
-stored = False  # whether store the results into the excel file
+root_path = 'C:/Users/Kai Zhao/PycharmProjects/OnePressButton/'
+path_Capture = root_path + 'pic_Captured/'
+path_Process = root_path + 'pic_processing/'
+fileName = root_path + 'dist/result.xls'     # read an excel file, prepare to store the result into it.
+stored = True  # whether store the results into the excel file
 captureSrc = 'video'
 vintValue = 70      # the light's value (strong or weak)
 pixPerMMAtZ = 59 / 3.12  # 95 / 3.945
 imageWidth = 200
 imageHeight = 200
 
-# read an excel file, prepare to store the result into it.
-loc = "./result_history.xls"
-rowCount, wb = ReadFromResult(loc)
-sheet1 = wb.get_sheet(0)
-
 
 # check whether two images are the same or not, to test whether the object moved during the capturing process or not.
 def isSame(dic, num1, num2):
     X_1, Y_1, width_1, height_1 = GetArea(dic, vintValue, num1, "original")
-    print(X_1, Y_1, width_1, height_1)
+    # print(X_1, Y_1, width_1, height_1)
     X_2, Y_2, width_2, height_2 = GetArea(dic, vintValue, num2, "original")
-    print(X_2, Y_2, width_2, height_2)
+    # print(X_2, Y_2, width_2, height_2)
     if abs(X_1 - X_2 > 1) or abs(Y_1 - Y_2 > 1) or abs(width_1 - width_2 > 1) or abs(height_1 - height_2 > 1):
         print("The seed moved during the rotation!! Start to 2nd capture of the seed...")
         return False
@@ -50,36 +51,36 @@ def isSame(dic, num1, num2):
 
 
 # single seed test of volume.
-def singleTest(name, dic_pro, dic_cap, imageOrFrame, startRow, show3D, save):
+def singleTest(name, dic_pro, dic_cap, imageOrFrame, show3D, save, excelfile, excelSheet, sheetRow):
     startTime = time()
     print("** Process --- Capture images **")
-    # if imageOrFrame == 'video':
-    #     getImagesFromVideo(dic_cap)
-    #     if isSame(dic_cap, 1, 37):
-    #         storeImagesIntoProcess(dic_cap, dic_pro)
-    #         print("** Capturing Images Success! **")
-    #     else:
-    #         getImagesFromVideo(dic_cap)
-    #         if isSame(dic_cap, 1, 37):
-    #             storeImagesIntoProcess(dic_cap, dic_pro)
-    #             print("** Capturing Images Success! **")
-    #         else:
-    #             print('Process terminated. Please replace the seed! Thanks!')
-    # else:
-    #     CaptureAllImages(dic_cap)
-    #     if isSame(dic_cap, 1, 37):
-    #         storeImagesIntoProcess(dic_cap, dic_pro)
-    #         print("** Capturing Images Success! **")
-    #     else:
-    #         CaptureAllImages(dic_cap)
-    #         if isSame(dic_cap, 1, 37):
-    #             storeImagesIntoProcess(dic_cap, dic_pro)
-    #             print("** Capturing Images Success! **")
-    #         else:
-    #             print('Process terminated. Please replace the seed! Thanks!')
+    if imageOrFrame == 'video':
+        getImagesFromVideo(dic_cap)
+        if isSame(dic_cap, 1, 37):
+            storeImagesIntoProcess(dic_cap, dic_pro)
+            print("** Capturing Images Success! **\n")
+        else:
+            getImagesFromVideo(dic_cap)
+            if isSame(dic_cap, 1, 37):
+                storeImagesIntoProcess(dic_cap, dic_pro)
+                print("** Capturing Images Success! **")
+            else:
+                print('Process terminated. Please replace the seed! Thanks!')
+    else:
+        CaptureAllImages(dic_cap)
+        if isSame(dic_cap, 1, 37):
+            storeImagesIntoProcess(dic_cap, dic_pro)
+            print("** Capturing Images Success! **")
+        else:
+            CaptureAllImages(dic_cap)
+            if isSame(dic_cap, 1, 37):
+                storeImagesIntoProcess(dic_cap, dic_pro)
+                print("** Capturing Images Success! **")
+            else:
+                print('Process terminated. Please replace the seed! Thanks!')
 
-    l, w, h, v = CalculateVolume(name, dic_pro, vintValue, pixPerMMAtZ, imageWidth, imageHeight, sheet1, startRow,
-                                 show3D, save)
+    l, w, h, v = CalculateVolume(name, dic_pro, vintValue, pixPerMMAtZ, imageWidth, imageHeight, show3D,
+                                 save, excelfile, excelSheet, sheetRow)
     print("Total time: --- %0.3f seconds ---" % (time() - startTime) + "\n")
     print("The calculation of %s " % name + " is complete!")
     return l, w, h, v
@@ -94,13 +95,14 @@ def setUpWindow():
     print(height)
     print(width)
 
-    # width of window, height of window, startX, startY, rowGap, fontSize, button's width
-    param = [round(width * 0.45), round(height * 0.6), 10, 80, 40, 14, 10]
+    # the elements: width of window, height of window, startX, startY, rowGap, fontSize, button's width,
+    #               text_display's width, text_display's height, text_running's width, text_running's height.
+    param = [round(width * 0.45), round(height * 0.6), 10, 80, 40, 14, 10, 23, 18, 42, 11]
     resolution = 1
 
     # when using package mayavi.mlab in file "TurntableCarve"
-    param = [round(width * 0.45), round(height * 0.6), 25, 200, 100, 14, 10]
-    resolution = 2.5
+    # param = [round(width * 0.45), round(height * 0.6), 25, 200, 100, 14, 10, 30, 20, 42, 15]
+    # resolution = 2.5
 
     window.title('Volume Calculating')
     window.geometry('%sx%s' % (param[0], param[1]))
@@ -113,7 +115,7 @@ def setUpWindow():
     # #################  create elements per row ##############################################
 
     # display text, to show the result ########################################################
-    text_display = tk.Text(window, font=('Arial', fontSize), width=30, height=20)
+    text_display = tk.Text(window, font=('Arial', fontSize), width=param[7], height=param[8])
     text_display.configure(state='disabled')
     text_display.place(x=(param[0] + 100) / 2, y=startY)
 
@@ -147,7 +149,7 @@ def setUpWindow():
     # running text #############################################################################
     startY += rowGap + 10
     startY += rowGap + 10
-    text_running = tk.Text(window, width=42, height=15)
+    text_running = tk.Text(window, width=param[9], height=param[10])
     text_running.configure(state='disabled')
     text_running.place(x=startX, y=startY)
 
@@ -183,6 +185,9 @@ def setUpWindow():
 
     def running():  # function for button "run" in the UI.
 
+        rowCount, wb = ReadFromResult(fileName)
+        sheet1 = wb.get_sheet(0)
+
         # clear the content of texts before new test.
         text_display.configure(state='normal')
         text_display.delete(1.0, END)
@@ -198,7 +203,9 @@ def setUpWindow():
             displayModel = True
         else:
             displayModel = False
-        l, w, h, v = singleTest(seed_id, path_Process, path_Capture, captureSrc, rowCount + 1, displayModel, stored)
+
+        l, w, h, v = singleTest(seed_id, path_Process, path_Capture, captureSrc, displayModel,
+                                stored, wb, sheet1, rowCount)
 
         # display the result on the display text.
         res_length = 'Length       =    ' + ("%0.3f" % l) + ' mm\n\n'
@@ -222,7 +229,9 @@ def setUpWindow():
     button_run = tk.Button(window, text='Run', font=('Arial', fontSize), width=param[6], height=1,
                            command=running)
     button_run.place(x=startX + 50 * resolution, y=startY)
-    button_exit = tk.Button(window, text='Exit', font=('Arial', fontSize), width=param[6], height=1, command=exit)
+
+    button_exit = tk.Button(window, text='Exit', font=('Arial', fontSize), width=param[6], height=1,
+                            command=window.quit)
     button_exit.place(x=(param[0] + 100) / 4, y=startY)
 
     ###########################################################################################

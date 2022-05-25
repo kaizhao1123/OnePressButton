@@ -7,6 +7,7 @@ from datetime import datetime
 import subprocess
 import os.path
 from sys import platform
+from tkinter import messagebox
 
 # only compile c programm on linux, binary for win32 included.
 if platform != "win32":
@@ -21,7 +22,7 @@ class Object(object):
 
 
 ##################################################################
-def CalculateVolume(name, dic, vintValue, pixPerMMAtZ, imageWidth, imageHeight, sheet, rowCount, show3D, stored):
+def CalculateVolume(name, dic, vintValue, pixPerMMAtZ, imageWidth, imageHeight, show3D, stored, wb, sheet, rowCount):
     print("** Process --- Analyze images **")
 
     # ############ new method ##############
@@ -100,7 +101,11 @@ def CalculateVolume(name, dic, vintValue, pixPerMMAtZ, imageWidth, imageHeight, 
         sheet.write(rowCount, 3, result_Width)
         sheet.write(rowCount, 4, result_Height)
         sheet.write(rowCount, 5, volume_in_mm3)
-        sheet.write(rowCount, 6, datetime.now().date())
+        sheet.write(rowCount, 6, str(datetime.now().date()))
+        try:
+            wb.save('result.xls')
+        except Exception as e:
+            messagebox.showerror("Save Error", "Please close the 'result' file! Otherwise can't be saved!")
 
     return result_Length, result_Width, result_Height, volume_in_mm3
     ##################################################################
